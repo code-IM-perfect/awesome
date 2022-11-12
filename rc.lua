@@ -864,6 +864,12 @@ globalkeys = gears.table.join(
 		awful.key({ modkey, "Control" },      "Escape",     function () awful.spawn(terminal.." -e htop") end,
 		{description = "Open htop", group = "Applications"}),
 
+		awful.key({ modkey, "Mod1" },      "KP_Next",     function ()
+			awful.spawn.with_shell(terminal.." -e python '/home/harshit/Harshit Work/Funny Stuff/Save Posts.py'")
+		end,
+		{description = "Save Posts", group = "Applications"}),
+
+
 	-- }}
 
 	-- {{ Media Control
