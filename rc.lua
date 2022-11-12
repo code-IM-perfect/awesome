@@ -124,15 +124,31 @@ end
 -- 	awful.spawn.with_shell("echo 'return {' > '~/.config/awesome/data/wallpUwUrs/"..saveFile.."'".." ; ".."shuf '~/.config/awesome/data/wallpUwUrs/"..saveFile.."_temp' | shuf >> '~/.config/awesome/data/wallpUwUrs/"..saveFile.."'".." ; ".."echo '}' >> '~/.config/awesome/data/wallpUwUrs/"..saveFile.."'")
 -- end
 buildWallDatabase=function (foldersTable,saveFile)
-	-- for _,folderr in ipairs(foldersTable) do
-	-- 	awful.spawn.with_shell("find "..folderr.." -type f -name '*.jpg' -o -name '*.jpeg' -o -name '*.png' -o -name '*.webp' | awk '{print \"\\\"\"$0\"\\\",\"} | shuf > '~/.config/awesome/data/wallpUwUrs/"..saveFile.."_temp'")
-	-- end
-	awful.spawn.with_shell("echo 'return {' > ~/.config/awesome/data/wallpUwUrs/bro.txt")
-	for _, folderr in ipairs(foldersTable) do
-		awful.spawn.with_shell("echo '\"ha\",' >> ~/.config/awesome/data/wallpUwUrs/bro.txt")
+	local folders2search = ""
+	for _,folderr in ipairs(foldersTable) do
+		folders2search=folders2search.." "..folderr
 	end
-	awful.spawn.with_shell("echo '}' >> ~/.config/awesome/data/wallpUwUrs/bro.txt")
+	
+	awful.spawn.easy_async_with_shell("find "..folders2search.." -type f -name '*.jpg' -o -name '*.jpeg' -o -name '*.png' -o -name '*.webp' | awk '{print \"\\\"\"$0\"\\\",\"}' | shuf | shuf", function (stuffies,_,_,_)
+		local save__file = io.open ("/home/harshit/.config/awesome/data/wallpUwUrs/"..saveFile, "w")
+		save__file:write(
+			"return {","\n",
+			stuffies,
+			"}")
+		save__file:close()
+		naughty.notify({text=folders2search})
+	end)
 end
+-- {{  trying with shell
+	-- local temp_db_file =  "~/.config/awesome/data/wallpUwUrs/"..saveFile.."_temp.txt"
+	-- awful.spawn.with_shell("echo '' > "..temp_db_file)
+	-- for _, folderr in ipairs(foldersTable) do
+	-- 	awful.spawn.with_shell("echo '\"ha\",' >> "..temp_db_file)
+	-- end
+	-- awful.spawn.with_shell("sleep 10;echo 'return {' > ~/.config/awesome/data/wallpUwUrs/"..saveFile.." ; ".."shuf "..temp_db_file.." >> "..saveFile.." ; ".."echo '}' >> ~/.config/awesome/data/wallpUwUrs/"..saveFile)
+-- }}
+
+
 
 gotoTag = function (t)
 	awful.tag.viewonly(awful.screen.focused().tags[t])
@@ -929,7 +945,7 @@ globalkeys = gears.table.join(
 			title = "Test",
 			text = "yeah that's it"
 		})
-		buildWallDatabase({"~/Harshit Work/Funny Stuff/z_CatDrawings/","~/Harshit Work/Funny Stuff/z_androidthemes/"},"yo.lua")
+		buildWallDatabase({"~/'Harshit Work/Funny Stuff/z_CatDrawings'","~/'Harshit Work/Funny Stuff/z_androidthemes'"},"yo.lua")
 		-- awful.spawn.with_shell("echo 'hey' > ~/.config/awesome/yo.txt")
 	end,
 	{description = "test notification", group = "launcher"}),
@@ -1220,11 +1236,6 @@ client.connect_signal("unfocus", function(c) c.border_color = beautiful.border_n
 
 
 -- {{ STUFF THAT I ADDED
-
--- Adding Gaps -- I added it to theme file later
--- beautiful.useless_gap = 3
--- beautiful.gap_single_client = true
-
 
 -- Autostart karne ke liye
 --   awful.spawn.with_shell('')
