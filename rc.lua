@@ -1,30 +1,23 @@
 -- {{{ Importing and stuff
--- If LuaRocks is installed, make sure that packages installed through it are
--- found (e.g. lgi). If LuaRocks is not installed, do nothing.
-pcall(require, "luarocks.loader")
 
--- Standard awesome library
-local gears = require("gears") -- Utilities such as color parsing and objects
-local awful = require("awful") -- Everything related to window managment
+-- Standard awesome libraries
+local gears = require("gears")
+local awful = require("awful")
 require("awful.autofocus")
--- Widget and layout library
 local wibox = require("wibox")
--- Theme handling library
 local beautiful = require("beautiful")
--- Notification library
 local naughty = require("naughty")
 
--- cairo shit
-local cairo = require("lgi").cairo
+-- -- cairo
+-- local cairo = require("lgi").cairo
 
-	-- local menubar = require("menubar")     -- commented this out coz I removed Menubar
 local hotkeys_popup = require("awful.hotkeys_popup")
 -- Enable hotkeys help widget for VIM and other apps
 -- when client with a matching name is opened:
 require("awful.hotkeys_popup.keys")
 
-local xresources = require("beautiful.xresources")
-local dpi = xresources.apply_dpi
+-- local xresources = require("beautiful.xresources")
+-- local dpi = xresources.apply_dpi
 
 math.randomseed(os.clock()*os.time()*math.random(247598))
 -- }}}
@@ -56,7 +49,6 @@ end
 
 -- {{{ Variable definitions
 
-	-- Themes define colours, icons, font and wallpapers.
 	-- beautiful.init(gears.filesystem.get_themes_dir() .. "default/theme.lua")
 	beautiful.init("~/.config/awesome/theme/theme.lua")
 
@@ -68,10 +60,6 @@ end
 
 
 	-- Default modkey.
-	  -- Usually, Mod4 is the key with a logo between Control and Alt.
-	  -- If you do not like this or do not have such a key,
-	  -- I suggest you to remap Mod4 to another key using xmodmap or other tools.
-	  -- You can use another modifier like Mod1, but it may interact with others.
 	modkey = "Mod4"
 
 
@@ -95,10 +83,8 @@ end
 		-- awful.layout.suit.corner.se,
 	}
 
-bluetooth_devices = {}
 connected_devices = {}
 prev_bt_output = nil
-bt_act=0
 
 cat_walls=require("data.wallpUwUrs.cats")
 art_walls=require("data.wallpUwUrs.art")
@@ -108,10 +94,10 @@ all_walls=gears.table.join(cat_walls,art_walls,win_walls)
 -- }}}
 
 -- {{{ Custom functions and stuff
+
 get_random_from=function (table)
 	return(table[math.random(#table)])
 end
-
 
 current_wallp = function ()
 	awful.spawn.easy_async_with_shell("tail -n2 ~/.config/awesome/data/wallpUwUrs/current.txt | head -c1",
@@ -119,7 +105,6 @@ current_wallp = function ()
 		return stdout
 	end)
 end
-
 
 set_wallpaper_from=function (konsa)
 	local this='/home/harshit/Harshit Work/Funny Stuff/z_wallpaper/Windows crash error [1920x1080].png'
@@ -160,12 +145,7 @@ set_wallpaper_from=function (konsa)
 	
 end
 
--- buildWallDatabase=function (foldersTable,saveFile)
--- 	for _,folderr in ipairs(foldersTable) do
--- 		awful.spawn.with_shell("find "..folderr.." -type f -name '*.jpg' -o -name '*.jpeg' -o -name '*.png' -o -name '*.webp' | awk '{print \"\\\"\"$0\"\\\",\"} | shuf > '~/.config/awesome/data/wallpUwUrs/"..saveFile.."_temp'")
--- 	end
--- 	awful.spawn.with_shell("echo 'return {' > '~/.config/awesome/data/wallpUwUrs/"..saveFile.."'".." ; ".."shuf '~/.config/awesome/data/wallpUwUrs/"..saveFile.."_temp' | shuf >> '~/.config/awesome/data/wallpUwUrs/"..saveFile.."'".." ; ".."echo '}' >> '~/.config/awesome/data/wallpUwUrs/"..saveFile.."'")
--- end
+
 buildWallDatabase=function (foldersTable,saveFile)
 	naughty.notify({text="Saving shit to "..saveFile})
 	local folders2search = ""
@@ -173,18 +153,35 @@ buildWallDatabase=function (foldersTable,saveFile)
 		folders2search=folders2search.." "..folderr
 	end
 
-	awful.spawn.easy_async_with_shell("find "..folders2search.." -type f -name '*.jpg' -o -name '*.jpeg' -o -name '*.png' -o -name '*.webp' | awk '{print \"\\\"\"$0\"\\\",\"}' | shuf | shuf", function (stuffies,_,_,_)
+	awful.spawn.easy_async_with_shell("find "..folders2search.." -type f -name '*.jpg' -o -name '*.jpeg' -o -name '*.png' | awk '{print \"\\\"\"$0\"\\\",\"}' | shuf | shuf", function (stuffies,_,_,_)
 		local save__file = io.open ("/home/harshit/.config/awesome/data/wallpUwUrs/"..saveFile, "w")
 		save__file:write(
 			"return {","\n",
 			stuffies,
 			"}")
 		save__file:close()
-		-- naughty.notify({text=folders2search})
 	end)
 	naughty.notify({text="built wallaper database-  "..saveFile})
+
+	------- For when cario starts supporting webp
+	-- awful.spawn.easy_async_with_shell("find "..folders2search.." -type f -name '*.jpg' -o -name '*.jpeg' -o -name '*.png' -o -name '*.webp' | awk '{print \"\\\"\"$0\"\\\",\"}' | shuf | shuf", function (stuffies,_,_,_)
+	-- 	local save__file = io.open ("/home/harshit/.config/awesome/data/wallpUwUrs/"..saveFile, "w")
+	-- 	save__file:write(
+	-- 		"return {","\n",
+	-- 		stuffies,
+	-- 		"}")
+	-- 	save__file:close()
+	-- end)
 end
+
 -- {{  trying with shell
+	-- buildWallDatabase=function (foldersTable,saveFile)
+-- 	for _,folderr in ipairs(foldersTable) do
+-- 		awful.spawn.with_shell("find "..folderr.." -type f -name '*.jpg' -o -name '*.jpeg' -o -name '*.png' -o -name '*.webp' | awk '{print \"\\\"\"$0\"\\\",\"} | shuf > '~/.config/awesome/data/wallpUwUrs/"..saveFile.."_temp'")
+-- 	end
+-- 	awful.spawn.with_shell("echo 'return {' > '~/.config/awesome/data/wallpUwUrs/"..saveFile.."'".." ; ".."shuf '~/.config/awesome/data/wallpUwUrs/"..saveFile.."_temp' | shuf >> '~/.config/awesome/data/wallpUwUrs/"..saveFile.."'".." ; ".."echo '}' >> '~/.config/awesome/data/wallpUwUrs/"..saveFile.."'")
+-- end
+
 	-- local temp_db_file =  "~/.config/awesome/data/wallpUwUrs/"..saveFile.."_temp.txt"
 	-- awful.spawn.with_shell("echo '' > "..temp_db_file)
 	-- for _, folderr in ipairs(foldersTable) do
@@ -244,11 +241,6 @@ toggle_mute	= function ()
 	awful.spawn.easy_async_with_shell ("wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle", function () updateVolume() end)
 end
 
--- no_of_connected_devices = function ()
--- 	local count = 0
--- 	for _ in pairs(connected_devices) do count = count + 1 end
--- 	return count
--- end
 
 update_bt = function ()
 	awful.spawn.easy_async_with_shell("bluetoothctl devices Connected",
@@ -300,40 +292,10 @@ end
 -- }}}
 
 
--- {{{ Menu  -- commemted this thingy out
--- Create a launcher widget and a main menu
--- myawesomemenu = {
---    { "hotkeys", function() hotkeys_popup.show_help(nil, awful.screen.focused()) end },
---    { "manual", terminal .. " -e man awesome" },
---    { "edit config", editor_cmd .. " " .. awesome.conffile },
---    { "restart", awesome.restart },
---    { "quit", function() awesome.quit() end },
--- }
-
--- mymainmenu = awful.menu({ items = { { "awesome", myawesomemenu, beautiful.awesome_icon },
---                                     { "open terminal", terminal }
---                                   }
---                         })
-
--- mylauncher = awful.widget.launcher({ image = beautiful.awesome_icon,
---                                      menu = mymainmenu })
-
--- -- Menubar configuration
--- menubar.utils.terminal = terminal -- Set the terminal for applications that require it
--- }}}
-
--- Keyboard map indicator and switcher
--- mykeyboardlayout = awful.widget.keyboardlayout()
-
 -- {{{ Wibar
 
 -- Create a textclock widget
 mytextclock = wibox.widget.textclock('     %a, %d %b %Y  %l:%M %p     ')
-
--- Volume meter
--- volbox = wibox.widget {
--- 	widget = wibox.widget.textbox
--- }
 
 volbox = wibox.widget.textbox()
 
@@ -547,21 +509,6 @@ awful.screen.connect_for_each_screen(function(s)
 	}
 
 
-	----Rounded from spaceship----------
-	-- s.mywibox = awful.wibar {
-	--     -- border_width = 2,
-	--     -- border_color = beautiful.themeColor,
-	--     position = 'top',
-	--     width = s.geometry.width, -- dpi(200),
-	--     screen = s,
-	--     -- stretch = true,
-	--     type = "dock",
-	--     margins = {top = 10, left = 20, right = 20, bottom = 10},
-	--     shape = function(cr,w,h) gears.shape.rounded_bar(cr,w,h) end,
-	-- }
-
-	-- s.jumpbox:buttons(awful.button({ }, 1, function () awful.tag.viewonly(awful.screen.focused().tags[3]) end))
-
 -------------------- MAIN WIBAR DECLARATION ------------------------
 	-- Add widgets to the wibox
 	s.mywibox:setup {
@@ -651,7 +598,8 @@ awful.screen.connect_for_each_screen(function(s)
 		-- 	}
 		-- })
 end)
--- -------------------- Floating WIBAR DECLARATION ------------------------
+
+-- {{ -------------------- Floating WIBAR DECLARATION ------------------------
 
 -- wibarWidget = function (widget, square, fill_horizontal, bg_huh, button)
 -- 	local fill = false
@@ -764,6 +712,8 @@ end)
 -- 		-- })
 -- end)
 
+-- }}
+
 -- }}}
 
 
@@ -773,7 +723,6 @@ end)
 
 -- {{ Global Keys
 globalkeys = gears.table.join(
-
 -- {{ Default Stuff
 	awful.key({ modkey,           }, "s",      hotkeys_popup.show_help,
 			  {description="show help", group="awesome"}),
@@ -1036,29 +985,9 @@ globalkeys = gears.table.join(
 		})
 		-- buildWallDatabase({"~/'Harshit Work/Funny Stuff/z_CatDrawings'","~/'Harshit Work/Funny Stuff/z_androidthemes'"},"yo.lua")
 		-- awful.spawn.with_shell("echo 'hey' > ~/.config/awesome/yo.txt")
-		set_wallpaper_from("last")
+		-- set_wallpaper_from("last")
 	end,
 	{description = "test notification", group = "launcher"}),
-
-
-	-- -- Test values
-	-- awful.key({ modkey, "Mod1" },        "Return",     function ()
-	-- 	awful.spawn.easy_async("wpctl get-volume @DEFAULT_AUDIO_SINK@",
-	-- 	function(stdout, stderr, reason, exit_code)
-	-- 		vol = string.sub(stdout, 9, 12)
-	-- 		volbox:set_markup_silently(vol)
-	-- 	end)
-	-- 	naughty.notify({
-	-- 		title = "vol",
-	-- 		text = vol
-	-- 	})
-	-- end,
-	-- {description = "test notification", group = "launcher"}),
-
-	-- Test values
-	-- awful.key({ modkey, "Mod1" },        "Return", function ()
-	-- 	update_bt()
-	-- end,	{description = "test notification", group = "launcher"}),
 
 
 	awful.key({ modkey, "Mod1"}, "KP_End", function ()
@@ -1067,7 +996,6 @@ globalkeys = gears.table.join(
 		
 	end)
 -- }}}
-
 )
 -- }}
 
@@ -1193,6 +1121,8 @@ clientbuttons = gears.table.join(
 
 -- Set keys
 root.keys(globalkeys)
+
+
 -- }}}
 
 -- {{{ Rules
@@ -1324,25 +1254,6 @@ client.connect_signal("unfocus", function(c) c.border_color = beautiful.border_n
 -- }}}
 
 
-
--- {{ STUFF THAT I ADDED
-
--- Autostart karne ke liye
---   awful.spawn.with_shell('')
--- awful.spawn.with_shell('compton')
-awful.spawn.with_shell('nitrogen --restore')
-
--- }}
-
-awesome.set_preferred_icon_size(32)
-
-updateVolume()
-
-update_bt()
-
--- realized this isn't needed
--- set_wallpaper_from("current")
-
 gears.timer {
     timeout   = 10,
     autostart = true,
@@ -1357,6 +1268,7 @@ gears.timer {
 		update_bt()
     end
 }
+bt_act=0
 bt_activate = gears.timer {
     timeout   = 2,
 	co=0,
@@ -1376,7 +1288,7 @@ bt_activate = gears.timer {
 
 naughty.config.defaults.margin = beautiful.notification_margin
 
--- {{{ Mouse bindings     -- I commemted it out coz unnecissary
+-- {{{ Mouse bindings for desktop
 
 -- root.buttons(gears.table.join(
 	-- 	awful.button({ }, 3, function () mymainmenu:toggle() end)
@@ -1385,3 +1297,12 @@ naughty.config.defaults.margin = beautiful.notification_margin
 -- ))
 
 -- }}}
+
+awesome.set_preferred_icon_size(32)
+
+updateVolume()
+
+update_bt()
+
+-- realized this isn't needed
+-- set_wallpaper_from("current")
