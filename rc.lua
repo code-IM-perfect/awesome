@@ -25,6 +25,8 @@ require("awful.hotkeys_popup.keys")
 
 local xresources = require("beautiful.xresources")
 local dpi = xresources.apply_dpi
+
+math.randomseed(os.clock()*os.time()*math.random(247598))
 -- }}}
 
 -- {{{ Error handling
@@ -98,23 +100,64 @@ connected_devices = {}
 prev_bt_output = nil
 bt_act=0
 
+cat_walls=require("data.wallpUwUrs.cats")
+art_walls=require("data.wallpUwUrs.art")
+win_walls=require("data.wallpUwUrs.win")
+all_walls=gears.table.join(cat_walls,art_walls,win_walls)
+
 -- }}}
 
 -- {{{ Custom functions and stuff
-last_wallp = function ()
-	awful.spawn.easy_async_with_shell("tail -n2 '~/.config/awesome/data/wallpUwUrs/current.txt' | head -c1",
-	function (stdout, _, _, _)
-		return stdout
-	end
-)
+get_random_from=function (table)
+	return(table[math.random(#table)])
 end
 
-wallp = function ()
-	awful.spawn.easy_async_with_shell("tail -n1 '~/.config/awesome/data/wallpUwUrs/current.txt'",
+
+current_wallp = function ()
+	awful.spawn.easy_async_with_shell("tail -n2 ~/.config/awesome/data/wallpUwUrs/current.txt | head -c1",
 	function (stdout, _, _, _)
 		return stdout
+	end)
+end
+
+
+set_wallpaper_from=function (konsa)
+	local this='/home/harshit/Harshit Work/Funny Stuff/z_wallpaper/Windows crash error [1920x1080].png'
+	naughty.notify({text=konsa})
+	if konsa=="current" then
+		awful.spawn.easy_async_with_shell("tail -n1 ~/.config/awesome/data/wallpUwUrs/current.txt",
+		function (stdout, _, _, _)
+			this=stdout:gsub("\n","")
+			gears.wallpaper.fit(this)
+		end)
+		elseif konsa=="last" then
+			awful.spawn.easy_async_with_shell("head -n -1 ~/.config/awesome/data/wallpUwUrs/current.txt",
+				function (stdout, _, _, _)
+					local log_current = io.open("/home/harshit/.config/awesome/data/wallpUwUrs/current.txt","w")
+					log_current:write(stdout)
+					log_current:close()
+					awful.spawn.easy_async_with_shell("tail -n1 ~/.config/awesome/data/wallpUwUrs/current.txt",
+						function (yo, _, _, _)
+							this=yo:gsub("\n","")
+							gears.wallpaper.fit(this)
+						end)
+				end)
+		else
+			if konsa=="cat" then
+				this=get_random_from(cat_walls)
+			elseif konsa=="all" then
+				this=get_random_from(all_walls)
+			elseif konsa=="win" then
+				this=get_random_from(win_walls)
+			elseif konsa=="art" then
+				this=get_random_from(art_walls)
+			end
+			local log_current = io.open("/home/harshit/.config/awesome/data/wallpUwUrs/current.txt","a")
+			log_current:write('\n',this)
+			log_current:close()
+			gears.wallpaper.fit(this)
 	end
-)
+	
 end
 
 -- buildWallDatabase=function (foldersTable,saveFile)
@@ -124,11 +167,12 @@ end
 -- 	awful.spawn.with_shell("echo 'return {' > '~/.config/awesome/data/wallpUwUrs/"..saveFile.."'".." ; ".."shuf '~/.config/awesome/data/wallpUwUrs/"..saveFile.."_temp' | shuf >> '~/.config/awesome/data/wallpUwUrs/"..saveFile.."'".." ; ".."echo '}' >> '~/.config/awesome/data/wallpUwUrs/"..saveFile.."'")
 -- end
 buildWallDatabase=function (foldersTable,saveFile)
+	naughty.notify({text="Saving shit to "..saveFile})
 	local folders2search = ""
 	for _,folderr in ipairs(foldersTable) do
 		folders2search=folders2search.." "..folderr
 	end
-	
+
 	awful.spawn.easy_async_with_shell("find "..folders2search.." -type f -name '*.jpg' -o -name '*.jpeg' -o -name '*.png' -o -name '*.webp' | awk '{print \"\\\"\"$0\"\\\",\"}' | shuf | shuf", function (stuffies,_,_,_)
 		local save__file = io.open ("/home/harshit/.config/awesome/data/wallpUwUrs/"..saveFile, "w")
 		save__file:write(
@@ -136,8 +180,9 @@ buildWallDatabase=function (foldersTable,saveFile)
 			stuffies,
 			"}")
 		save__file:close()
-		naughty.notify({text=folders2search})
+		-- naughty.notify({text=folders2search})
 	end)
+	naughty.notify({text="built wallaper database-  "..saveFile})
 end
 -- {{  trying with shell
 	-- local temp_db_file =  "~/.config/awesome/data/wallpUwUrs/"..saveFile.."_temp.txt"
@@ -921,17 +966,55 @@ globalkeys = gears.table.join(
 	-- }}
 
 	-- {{ Background
-	awful.key({ modkey, "Control" },      "KP_Begin",     function () awful.spawn("nitrogen --set-zoom --random --save", false) end,  -- Numpad 5
-		{description = "New Background from all", group = "client"}),
+	awful.key({ modkey, "Control" },      "KP_Begin",
+		function ()		-- Numpad 5
+			-- awful.spawn("nitrogen --set-zoom --random --save", false)
+			set_wallpaper_from("all")
+		end,   {description = "New Background from all", group = "Wallpaper"}),
 
-		awful.key({ modkey, "Control" },      "KP_Insert",     function () awful.spawn("nitrogen --restore", false) end,  -- Numpad 5
-		{description = "New Background from all", group = "client"}),
+		awful.key({ modkey, "Control" },      "KP_Insert",	-- Numpad 0
+			function ()
+				-- awful.spawn("nitrogen --restore", false)
+				set_wallpaper_from("current")
+			end,
+		{description = "Restoring Last Wallpaper", group = "Wallpaper"}),
 
-	awful.key({ modkey, "Control" },      "KP_Home",     function () awful.spawn("nitrogen 'Harshit Work/Windows Spotlight' --set-auto --random --save", false) end,
-		{description = "New Spotlight Background", group = "client"}),
+		awful.key({ modkey, "Control" },      "KP_Down",	-- Numpad 2
+			function ()
+				-- awful.spawn("nitrogen --restore", false)
+				set_wallpaper_from("last")
+			end,
+		{description = "Going to the Wallpaper Before Current", group = "Wallpaper"}),
 
-	awful.key({ modkey, "Control" },      "KP_Prior",     function () awful.spawn("nitrogen 'Harshit Work/Funny Stuff/z_wallpaper' --set-auto --random --save", false) end,
-		{description = "New Art Background", group = "client"}),
+	awful.key({ modkey, "Control" },      "KP_Home",
+		function ()
+			-- awful.spawn("nitrogen 'Harshit Work/Windows Spotlight' --set-auto --random --save", false)
+			set_wallpaper_from("win")
+		end,
+		{description = "New Spotlight Background", group = "Wallpaper"}),
+
+	awful.key({ modkey, "Control" },      "KP_Prior",
+		function ()
+			-- awful.spawn("nitrogen 'Harshit Work/Funny Stuff/z_wallpaper' --set-auto --random --save", false)
+			set_wallpaper_from("art")
+		end,
+		{description = "New Art Background", group = "Wallpaper"}),
+
+	awful.key({ modkey, "Control" },      "KP_Up",
+		function ()
+			set_wallpaper_from("cat")
+		end,
+		{description = "New Cat Background", group = "Wallpaper"}),
+
+
+	awful.key({ modkey, "Control","Mod1" },      "KP_Prior",     function ()
+			buildWallDatabase(require("data.wallpUwUrs.src.cats"),"cats.lua")
+			buildWallDatabase(require("data.wallpUwUrs.src.redd"),"art.lua")
+			buildWallDatabase(require("data.wallpUwUrs.src.windoze"),"win.lua")
+		end,
+		{description = "Build Wallpaper Database", group = "Wallpaper"}),
+	
+	
 	-- }}
 
 	-- To run rofi app menu
@@ -951,8 +1034,9 @@ globalkeys = gears.table.join(
 			title = "Test",
 			text = "yeah that's it"
 		})
-		buildWallDatabase({"~/'Harshit Work/Funny Stuff/z_CatDrawings'","~/'Harshit Work/Funny Stuff/z_androidthemes'"},"yo.lua")
+		-- buildWallDatabase({"~/'Harshit Work/Funny Stuff/z_CatDrawings'","~/'Harshit Work/Funny Stuff/z_androidthemes'"},"yo.lua")
 		-- awful.spawn.with_shell("echo 'hey' > ~/.config/awesome/yo.txt")
+		set_wallpaper_from("last")
 	end,
 	{description = "test notification", group = "launcher"}),
 
@@ -1256,15 +1340,18 @@ updateVolume()
 
 update_bt()
 
+-- realized this isn't needed
+-- set_wallpaper_from("current")
+
 gears.timer {
-    timeout   = 30,
+    timeout   = 10,
     autostart = true,
     callback  = function()
 		updateVolume()
     end
 }
 gears.timer {
-    timeout   = 60,
+    timeout   = 30,
     autostart = true,
     callback  = function()
 		update_bt()

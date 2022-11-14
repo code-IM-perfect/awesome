@@ -1,3 +1,3 @@
 return {
-    "~/Harshit Work/Windows Spotlight",
+    "~/'Harshit Work/Windows Spotlight'",
 }

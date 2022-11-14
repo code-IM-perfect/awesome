@@ -166,7 +166,7 @@ theme.titlebar_maximized_button_focus_inactive  = themes_path.."default/titlebar
 theme.titlebar_maximized_button_normal_active = themes_path.."default/titlebar/maximized_normal_active.png"
 theme.titlebar_maximized_button_focus_active  = themes_path.."default/titlebar/maximized_focus_active.png"
 
-theme.wallpaper = "/home/harshit/Harshit Work/Funny Stuff/z_wallpaper/Windows crash error [1920x1080].png"
+-- theme.wallpaper = "/home/harshit/Harshit Work/Funny Stuff/z_wallpaper/Windows crash error [1920x1080].png"
 
 -- You can use your own layout icons like this:
 theme.layout_fairh = gcolor(themes_path.."default/layouts/fairhw.png", theme.macchiato.text)
