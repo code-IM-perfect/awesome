@@ -95,6 +95,8 @@ all_walls=gears.table.join(cat_walls,art_walls,win_walls)
 
 -- {{{ Custom functions and stuff
 
+-- {{ Wallpaper
+
 get_random_from=function (table)
 	return(table[math.random(#table)])
 end
@@ -108,7 +110,7 @@ end
 
 set_wallpaper_from=function (konsa)
 	local this='/home/harshit/Harshit Work/Funny Stuff/z_wallpaper/Windows crash error [1920x1080].png'
-	naughty.notify({text=konsa})
+	-- naughty.notify({text=konsa})
 	if konsa=="current" then
 		awful.spawn.easy_async_with_shell("tail -n1 ~/.config/awesome/data/wallpUwUrs/current.txt",
 		function (stdout, _, _, _)
@@ -190,11 +192,13 @@ end
 	-- awful.spawn.with_shell("sleep 10;echo 'return {' > ~/.config/awesome/data/wallpUwUrs/"..saveFile.." ; ".."shuf "..temp_db_file.." >> "..saveFile.." ; ".."echo '}' >> ~/.config/awesome/data/wallpUwUrs/"..saveFile)
 -- }}
 
-
+-- }}
 
 gotoTag = function (t)
 	awful.tag.viewonly(awful.screen.focused().tags[t])
 end
+
+-- {{ Volume
 
 updateVolume = function ()
 	awful.spawn.easy_async("wpctl get-volume @DEFAULT_AUDIO_SINK@",
@@ -241,6 +245,9 @@ toggle_mute	= function ()
 	awful.spawn.easy_async_with_shell ("wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle", function () updateVolume() end)
 end
 
+-- }}
+
+-- {{ Bluetooth
 
 update_bt = function ()
 	awful.spawn.easy_async_with_shell("bluetoothctl devices Connected",
@@ -283,11 +290,13 @@ update_bt = function ()
 		end)
 end
 
-activate_bluetooth = function ()
-	bt_activate:again()
+activate_bluetooth_search = function ()
+	bt_activate_search:again()
 	naughty.notify{text="Looking for Bluetooth changes now"}
 	bluetoothIcon.image=gears.surface.load_uncached(beautiful.bt_searching)
 end
+
+-- }}
 
 -- }}}
 
@@ -331,7 +340,7 @@ bluetoothIcon = wibox.widget {
 	image=gears.surface.load_uncached(beautiful.bt_inactive),
 	widget=wibox.widget.imagebox,
 	margin=8,
-	buttons=awful.button({},1,function ()	activate_bluetooth()	end)
+	buttons=awful.button({},1,function ()	activate_bluetooth_search()	end)
 }
 
 bt_tray_separator = wibox.widget.textbox(" | ")
@@ -971,7 +980,7 @@ globalkeys = gears.table.join(
 	{description = "Rofi Runner", group = "launcher"}),
 
 	awful.key({ modkey, "Mod1" },        "KP_Multiply",     function ()
-		activate_bluetooth()
+		activate_bluetooth_search()
 	end,
 	{description = "Rofi Runner", group = "launcher"}),
 
@@ -983,18 +992,19 @@ globalkeys = gears.table.join(
 			title = "Test",
 			text = "yeah that's it"
 		})
+		bt_bg_searching.timer.timeout=6
 		-- buildWallDatabase({"~/'Harshit Work/Funny Stuff/z_CatDrawings'","~/'Harshit Work/Funny Stuff/z_androidthemes'"},"yo.lua")
 		-- awful.spawn.with_shell("echo 'hey' > ~/.config/awesome/yo.txt")
 		-- set_wallpaper_from("last")
 	end,
-	{description = "test notification", group = "launcher"}),
+	{description = "test notification", group = "launcher"})
 
 
-	awful.key({ modkey, "Mod1"}, "KP_End", function ()
-		-- awful.tag.viewidx(3)
-		-- awful.tag.viewonly(awful.screen.focused().tags[3])
-		
-	end)
+	-- awful.key({ modkey, "Mod1"}, "KP_End", function ()
+	-- 	-- awful.tag.viewidx(3)
+	-- 	-- awful.tag.viewonly(awful.screen.focused().tags[3])
+	-- end)
+
 -- }}}
 )
 -- }}
@@ -1261,15 +1271,16 @@ gears.timer {
 		updateVolume()
     end
 }
-gears.timer {
+bt_bg_searching=gears.timer {
     timeout   = 30,
     autostart = true,
     callback  = function()
 		update_bt()
+		-- naughty.notify({text="yo"})
     end
 }
 bt_act=0
-bt_activate = gears.timer {
+bt_activate_search = gears.timer {
     timeout   = 2,
 	co=0,
 	autostart=false,
@@ -1281,10 +1292,12 @@ bt_activate = gears.timer {
 			prev_bt_output = "a"
 			update_bt()
 			bt_act = 0
-			bt_activate:stop()
+			bt_activate_search:stop()
 		end
     end
 }
+
+-- bt_bg_searching.timer.timeout=6
 
 naughty.config.defaults.margin = beautiful.notification_margin
 
@@ -1304,5 +1317,4 @@ updateVolume()
 
 update_bt()
 
--- realized this isn't needed
--- set_wallpaper_from("current")
+set_wallpaper_from("current")
