@@ -248,7 +248,7 @@ end
 -- }}
 
 -- {{ Bluetooth
-
+local bt_dekhu = false
 update_bt = function ()
 	awful.spawn.easy_async_with_shell("bluetoothctl devices Connected",
 		function(stdout, _, _, _)
@@ -281,9 +281,19 @@ update_bt = function ()
 					then
 						bluetoothIcon.image = gears.surface.load_uncached(beautiful.bt_active)
 						bt_tray_separator.visible=true
+						if bt_dekhu==false then
+							bt_dekhu=true
+							bt_bg_searching.timeout=3
+							bt_bg_searching:again()
+						end
 					else
 						bluetoothIcon.image = gears.surface.load_uncached(beautiful.bt_inactive)
 						bt_tray_separator.visible=false
+						if bt_dekhu==true then
+							bt_dekhu=false
+							bt_bg_searching.timeout=30
+							bt_bg_searching:again()
+						end
 				end
 			end
 			prev_bt_output = stdout
@@ -992,7 +1002,6 @@ globalkeys = gears.table.join(
 			title = "Test",
 			text = "yeah that's it"
 		})
-		bt_bg_searching.timer.timeout=6
 		-- buildWallDatabase({"~/'Harshit Work/Funny Stuff/z_CatDrawings'","~/'Harshit Work/Funny Stuff/z_androidthemes'"},"yo.lua")
 		-- awful.spawn.with_shell("echo 'hey' > ~/.config/awesome/yo.txt")
 		-- set_wallpaper_from("last")
@@ -1003,6 +1012,7 @@ globalkeys = gears.table.join(
 	-- awful.key({ modkey, "Mod1"}, "KP_End", function ()
 	-- 	-- awful.tag.viewidx(3)
 	-- 	-- awful.tag.viewonly(awful.screen.focused().tags[3])
+	-- 	some_timer:again()
 	-- end)
 
 -- }}}
@@ -1276,7 +1286,7 @@ bt_bg_searching=gears.timer {
     autostart = true,
     callback  = function()
 		update_bt()
-		-- naughty.notify({text="yo"})
+		-- naughty.notify({text=("yo")})
     end
 }
 bt_act=0
